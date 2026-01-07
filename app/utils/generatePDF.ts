@@ -13,7 +13,7 @@ export function generateBillPDF(data: BillData): void {
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 10;
 
-  const drawBill = (yOffset: number, scale: number) => {
+  const drawBill = (yOffset: number) => {
     const isEcommerce = data.settings.template === 'ecommerce';
     const primaryColor = isEcommerce ? [15, 23, 42] : [200, 0, 0];
     
@@ -103,6 +103,29 @@ export function generateBillPDF(data: BillData): void {
       doc.text(`Mr./Ms. ${data.customerName || "..........................................................."}`, margin + 5, yOffset + 50);
       doc.text(`Add. ${data.customerAddress || ".............................................................."}`, margin + 5, yOffset + 58);
 
+      // Items Table for Classic
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text("Description", margin + 10, yOffset + 70);
+      doc.text("Qty", margin + 100, yOffset + 70);
+      doc.text("Price", margin + 130, yOffset + 70);
+      doc.text("Total", margin + 160, yOffset + 70);
+      doc.line(margin + 5, yOffset + 72, pageWidth - margin - 5, yOffset + 72);
+
+      doc.setFont("helvetica", "normal");
+      let itemY = yOffset + 80;
+      data.items.forEach(item => {
+        doc.text(item.productName || item.description || "", margin + 10, itemY);
+        doc.text(item.quantity.toString(), margin + 100, itemY);
+        doc.text(`Rs. ${item.price}`, margin + 130, itemY);
+        doc.text(`Rs. ${item.quantity * item.price}`, margin + 160, itemY);
+        itemY += 8;
+      });
+
+      const grandTotal = data.items.reduce((acc, item) => acc + (item.quantity * item.price), 0);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Grand Total: Rs. ${grandTotal}`, pageWidth - margin - 10, itemY + 10, { align: "right" });
+
       // Watermark
       doc.setTextColor(240, 240, 240);
       doc.setFontSize(60);
@@ -110,16 +133,16 @@ export function generateBillPDF(data: BillData): void {
 
       doc.setTextColor(200, 0, 0);
       doc.setFontSize(12);
-      doc.text("Jewellery Wala", pageWidth - margin - 40, yOffset + billHeight - 15);
+      doc.text(data.shopDetails.name, pageWidth - margin - 40, yOffset + billHeight - 15);
       doc.text("Signature", pageWidth - margin - 35, yOffset + billHeight - 10);
     }
   };
 
   if (data.settings.twoInOne) {
-    drawBill(margin, 0.5);
-    drawBill(pageHeight / 2 + 5, 0.5);
+    drawBill(margin);
+    drawBill(pageHeight / 2 + 5);
   } else {
-    drawBill(margin, 1);
+    drawBill(margin);
   }
 
   doc.save(`Bill_${data.billNo}.pdf`);
@@ -186,7 +209,10 @@ export function generateJobLetterPDF(data: JobLetterData): void {
   doc.text(`at ${data.companyName}. You are required to join on`, leftMargin, currentY);
   currentY += lineHeight;
 
-  const joiningText = data.joiningDate ? new Date(data.joiningDate).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" }) : "_________ (Joining Date)";
+  const joiningDateObj = data.joiningDate ? new Date(data.joiningDate) : null;
+  const joiningText = joiningDateObj && !isNaN(joiningDateObj.getTime()) 
+    ? joiningDateObj.toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" }) 
+    : "_________ (Joining Date)";
   doc.text(joiningText + ".", leftMargin, currentY);
   currentY += lineHeight;
 
