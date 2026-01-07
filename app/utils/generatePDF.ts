@@ -1,6 +1,70 @@
 import { jsPDF } from "jspdf";
-import { JobLetterData } from "../types";
+import { JobLetterData, BillData } from "../types";
 import { numberToWords, formatCurrency } from "./numberToWords";
+
+export function generateBillPDF(data: BillData): void {
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 10;
+
+  // Main Border (Reddish like image)
+  doc.setDrawColor(200, 0, 0);
+  doc.setLineWidth(1);
+  doc.rect(margin, margin, pageWidth - 2 * margin, pageHeight - 2 * margin);
+  doc.rect(margin + 1, margin + 1, pageWidth - 2 * margin - 2, pageHeight - 2 * margin - 2);
+
+  // Header
+  doc.setTextColor(200, 0, 0);
+  doc.setFontSize(10);
+  doc.text(`Mo. ${data.shopDetails.phones[0]}`, margin + 5, margin + 10);
+  doc.text(`Mo. ${data.shopDetails.phones[1]}`, pageWidth - margin - 35, margin + 10);
+  
+  doc.setFontSize(8);
+  doc.text("JAI SHREE SHYAM", pageWidth / 2, margin + 8, { align: "center" });
+
+  doc.setFontSize(24);
+  doc.setFont("helvetica", "bold");
+  doc.text(data.shopDetails.name, pageWidth / 2, margin + 20, { align: "center" });
+
+  doc.setFontSize(10);
+  doc.setFillColor(200, 0, 0);
+  doc.setTextColor(255, 255, 255);
+  doc.rect(pageWidth / 2 - 35, margin + 22, 70, 5, "F");
+  doc.text("All Type Gold & Silver Jewellery Seller", pageWidth / 2, margin + 26, { align: "center" });
+
+  doc.setTextColor(200, 0, 0);
+  doc.setFontSize(12);
+  doc.text(`Add: ${data.shopDetails.address}`, pageWidth / 2, margin + 32, { align: "center" });
+  doc.line(margin + 2, margin + 34, pageWidth - margin - 2, margin + 34);
+
+  // Bill Info
+  doc.setFontSize(14);
+  doc.text(`Bill No. ${data.billNo}`, margin + 5, margin + 42);
+  doc.text(`Date: ${data.date}`, pageWidth - margin - 50, margin + 42);
+
+  doc.setFontSize(12);
+  doc.text(`Mr./Ms. ${data.customerName || "......................................................................................"}`, margin + 5, margin + 50);
+  doc.text(`Add. ${data.customerAddress || "........................................................................................."}`, margin + 5, margin + 58);
+
+  // Watermark
+  doc.setTextColor(240, 240, 240);
+  doc.setFontSize(100);
+  doc.text("JW", pageWidth / 2, pageHeight / 2, { align: "center", angle: 0 });
+
+  // Footer
+  doc.setTextColor(200, 0, 0);
+  doc.setFontSize(12);
+  doc.text("Jewellery Wala", pageWidth - margin - 40, pageHeight - margin - 15);
+  doc.text("Signature", pageWidth - margin - 35, pageHeight - margin - 10);
+
+  doc.save(`Bill_${data.billNo}.pdf`);
+}
 
 export function generateJobLetterPDF(data: JobLetterData): void {
   const doc = new jsPDF({

@@ -22,6 +22,24 @@ export interface JobLetterData {
   additionalTasks: string;
 }
 
+export interface BillData {
+  billNo: string;
+  date: string;
+  customerName: string;
+  customerAddress: string;
+  items: Array<{
+    description: string;
+    quantity: number;
+    price: number;
+  }>;
+  shopDetails: {
+    name: string;
+    address: string;
+    phones: string[];
+    email: string;
+  };
+}
+
 export const defaultFormData: JobLetterData = {
   companyName: "Jewellery Wala",
   companyAddress: "Jhalamand Circle, Jodhpur",
@@ -39,4 +57,18 @@ export const defaultFormData: JobLetterData = {
   weeklyOff2: "",
   probationMonths: 3,
   additionalTasks: "",
+};
+
+export const defaultBillData: BillData = {
+  billNo: "1900",
+  date: new Date().toISOString().split('T')[0],
+  customerName: "",
+  customerAddress: "",
+  items: [{ description: "", quantity: 1, price: 0 }],
+  shopDetails: {
+    name: "JEWELLERY WALA",
+    address: "Jhalamand Circle, Jodhpur",
+    phones: ["8094681299", "9460343208"],
+    email: "jewellerywalaonline@gmail.com",
+  },
 };
